@@ -1,0 +1,45 @@
+{
+    "name": "top",
+    "env" : {
+        "appPublisher" :"root",
+        "appLocalName" : "test",
+        "publicPath" : "process.env.PUBLIC_PATH||../../../../../test/public",
+        "appSuffix" : "vcap.me"
+    },
+    "components": [
+        {
+            "name": "security",
+            "module": null
+        },
+        {
+            "name": "sharing"
+        },
+        {
+            "module": "../../index.js#plug",
+            "name": "forward",
+            "description": "HTTP proxy plugin\n Properties: ",
+             "env": {
+                         "adminCA": "process.env.ADMIN_CA||admin",
+                         "forwardingTable": "process.env.FORWARDING_TABLE||forwarding"
+                    }
+        },
+        {
+           "name": "pipeline",
+           "components" : [
+               {
+                   "name" :"static2"
+               },
+               {
+                   "name": "forward",
+                   "module": "../../index.js#pipe",
+                   "description": "Forward HTTP requests.",
+                    "env" : {
+                        "webSocketPipe": false,
+                        "httpPipe" : true,
+                        "path": "/"
+                    }
+                }
+            ]
+        }
+    ]
+}

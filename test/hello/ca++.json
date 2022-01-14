@@ -1,0 +1,12 @@
+{
+    "name" : "ca",
+    "components" : [
+        {
+            "name": "log"
+        },
+        {
+            "name": "security",
+            "module": null
+        }
+    ]
+}

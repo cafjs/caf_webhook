@@ -1,0 +1,12 @@
+{
+    "opts": {
+        "template": "../../node_modules/docdash"
+    },
+    "templates": {
+        "cleverLinks": false,
+        "monospaceLinks": false
+    },
+    "plugins": [
+        "plugins/markdown"
+    ]
+}

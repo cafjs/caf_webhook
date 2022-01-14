@@ -1,0 +1,29 @@
+{
+    "name": "caf_webhook",
+    "description": "Cloud Assistant library to handle webhooks notifications",
+    "version": "0.4.0",
+    "author": "Antonio Lain <antlai@cafjs.com>",
+    "license": "Apache-2.0",
+    "dependencies": {
+        "caf_core": "^0.4.0"
+    },
+    "devDependencies": {
+        "eslint": "^6.8.0",
+        "nodeunit" : ">=0.9",
+        "jsdoc": "^3.4.2",
+        "docdash": "^1.2.0"
+    },
+    "main": "index",
+    "homepage": "http://www.cafjs.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/cafjs/caf_webhook.git"
+    },
+    "scripts": {
+        "test": "node ./node_modules/.bin/nodeunit",
+        "eslint" : "./node_modules/.bin/eslint -c .eslintrc.js .",
+        "eslintfix" : "./node_modules/.bin/eslint -c .eslintrc.js --fix .",
+        "docs" : "rm -fr docs; mkdir -p docs; ./node_modules/.bin/jsdoc --pedantic -c ./conf.json -d docs lib/*.js --readme ./README.md --package ./package.json"
+    },
+    "engines": { "node": ">= 12.0.0 " }
+}
