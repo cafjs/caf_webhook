@@ -39,24 +39,6 @@ See {@link module:caf_webhook/plug_webhook}
                          "webhookCA": "process.env.WEBHOOK_CA||root-admin",
                          "webhookMap": "process.env.WEBHOOK_MAP||webhook"
                     }
-        },
-        {
-           "name": "pipeline",
-           "components" : [
-               {
-                   "name" :"static2"
-               },
-               {
-                   "name": "webhook",
-                   "module": "caf_webhook/pipe",
-                   "description": "Webhook HTTP requests.",
-                   "env" : {
-                       "webSocketPipe": false,
-                       "httpPipe" : true,
-                       "path": "process.env.WEBHOOK_PATH||/webhook"
-                   }
-                }
-            ]
         }
       ]
     }
