@@ -6,14 +6,22 @@ const caf_core = require('caf_core');
 const myUtils = caf_core.caf_components.myUtils;
 const async = caf_core.async;
 const cli = caf_core.caf_cli;
-const request = require('request');
+const fetch = require('node-fetch');
 
-const CA_OWNER_1='forwardother1';
+
+const CA_OWNER_1='root';
+const CA_OWNER_2='foo';
 const CA_LOCAL_NAME_1='admin';
 const CA_LOCAL_NAME_2='foo';
-const FROM_1 =  CA_OWNER_1 + '-' + CA_LOCAL_NAME_1;
-const FROM_2 =  CA_OWNER_1 + '-' + CA_LOCAL_NAME_2;
+const TOPIC_SUFFIX = 'topic';
+const TOPIC_BAD_SUFFIX = 'topicBAD';
+const FROM_1 = CA_OWNER_1 + '-' + CA_LOCAL_NAME_1;
+const FROM_2 = CA_OWNER_2 + '-' + CA_LOCAL_NAME_2;
+const TOPIC = FROM_2 + '-' + TOPIC_SUFFIX;
+const TOPIC_BAD = FROM_2 + '-' + TOPIC_BAD_SUFFIX;
 
+const util = require('util');
+const setTimeoutPromise = util.promisify(setTimeout);
 
 process.on('uncaughtException', function (err) {
                console.log("Uncaught Exception: " + err);
@@ -22,21 +30,21 @@ process.on('uncaughtException', function (err) {
 
 });
 
-const getIt = function(test, path, num, cb) {
-    request.get('http://127.0.0.1:3000/' + path, {},
-                function (error, response, body) {
-                    test.ifError(error);
-                    if (isNaN(num)) {
-                        test.equal(response.statusCode, 404);
-                    } else {
-                        test.equal(num, parseInt(body));
-                    }
-                    cb(null);
-                });
+const postIt = async function(topic, value) {
+    const res = await fetch('http://127.0.0.1:3000/webhook/' + topic, {
+        method: 'post',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: value,
+    });
+    const data = await res.json();
+    console.log(data);
+    return data;
 };
 
 module.exports = {
-    setUp: function (cb) {
+    setUp(cb) {
        const self = this;
         app.init( {name: 'top'}, 'framework.json', null,
                       function(err, $) {
@@ -51,7 +59,8 @@ module.exports = {
                           }
                       });
     },
-    tearDown: function (cb) {
+
+    tearDown(cb) {
         const self = this;
         if (!this.$) {
             cb(null);
@@ -60,53 +69,85 @@ module.exports = {
             this.$.top.__ca_graceful_shutdown__(null, cb);
         }
     },
-    forward: function (test) {
-        test.expect(10);
+
+    async forward(test) {
+        test.expect(4);
         var s1;
         const from1 = FROM_1;
         const from2 = FROM_2;
-        async.series([
-            function(cb) {
-                s1 = new cli.Session('ws://foo-xx.vcap.me:3000', from1, {
-                    from : from1
-                });
-                s1.onopen = function() {
-                    getIt(test, 'one', 1, cb);
-                };
-            },
-            function(cb) {
-                const cb1 = function(err) {
-                    test.ifError(err);
-                    cb(null);
-                };
-                s1.setBinding(
-                    from2, 'http://foo-xx.vcap.me:3000/forwardother1-bar1', cb1
-                );
-            },
-            function(cb) {
-                getIt(test, from2 + '/three', 3, cb);
-            },
-            function(cb) {
-                const cb1 = function(err) {
-                    test.ifError(err);
-                    cb(null);
-                };
-                s1.deleteBinding(from2, cb1);
-            },
-            function(cb) {
-                getIt(test, from2 + '/three', NaN, cb);
-            },
 
-            function(cb) {
+        try {
+            // Set up admin
+            s1 = new cli.Session('ws://root-webhook.vcap.me:3000',
+                                 from1, {from : from1});
+            await new Promise((resolve, reject) => {
+                s1.onopen = async function() {
+                    try {
+                        const res = await s1.hello().getPromise();
+                        resolve(res);
+                    } catch (err) {
+                        test.ok(false, 'Got exception ' + err);
+                        reject(err);
+                    }
+                };
+            });
+            await new Promise((resolve, reject) => {
                 s1.onclose = function(err) {
                     test.ifError(err);
-                    cb(null, null);
+                    resolve(null);
                 };
                 s1.close();
-            }
-        ], function(err, res) {
+            });
+
+            await setTimeoutPromise(100);
+
+            // Init foo
+            s1 = new cli.Session('ws://root-webhook.vcap.me:3000',
+                                 from2, {from : from2});
+            await new Promise((resolve, reject) => {
+                s1.onopen = async function() {
+                    try {
+                        const res = await s1.register().getPromise();
+                        resolve(res);
+                    } catch (err) {
+                        test.ok(false, 'Got exception ' + err);
+                        reject(err);
+                    }
+                };
+            });
+
+            await setTimeoutPromise(100);
+
+            await postIt(TOPIC, "{value: 15}");
+
+            await setTimeoutPromise(100);
+
+            let res = await s1.getValue().getPromise();
+
+            test.ok(res === 15);
+
+            await postIt(TOPIC_BAD, "{value: 30}");
+
+            await setTimeoutPromise(100);
+
+            res = await s1.getValue().getPromise();
+
+            test.ok(res !== 30);
+
+            await setTimeoutPromise(100);
+
+            await new Promise((resolve, reject) => {
+                s1.onclose = function(err) {
+                    test.ifError(err);
+                    resolve(null);
+                };
+                s1.close();
+            });
+
+            test.done();
+        } catch (err) {
             test.ifError(err);
             test.done();
-        });
+        }
     }
 };

@@ -29,15 +29,14 @@ See {@link module:caf_webhook/plug_webhook}
      "name": "top",
      "components" : [
         {
-            "name": "pubsub"
+            "name": "webhook"
         },
         {
             "module": "caf_webhook/plug",
             "name": "webhook",
             "description": "Webhook plugin\n Properties: ",
              "env": {
-                         "webhookCA": "process.env.WEBHOOK_CA||root-admin",
-                         "webhookMap": "process.env.WEBHOOK_MAP||webhook"
+                         "webhookMap": "process.env.WEBHOOK_MAP||root-admin-webhook"
                     }
         }
       ]
