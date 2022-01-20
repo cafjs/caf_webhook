@@ -38,7 +38,7 @@ const postIt = async function(topic, value) {
         },
         body: value,
     });
-    const data = await res.json();
+    const data = await res.text();
     console.log(data);
     return data;
 };
@@ -118,7 +118,7 @@ module.exports = {
 
             await setTimeoutPromise(100);
 
-            await postIt(TOPIC, "{value: 15}");
+            await postIt(TOPIC, '{"value": 15}');
 
             await setTimeoutPromise(100);
 
@@ -126,7 +126,7 @@ module.exports = {
 
             test.ok(res === 15);
 
-            await postIt(TOPIC_BAD, "{value: 30}");
+            await postIt(TOPIC_BAD, '{"value": 30}');
 
             await setTimeoutPromise(100);
 
