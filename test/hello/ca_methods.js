@@ -13,24 +13,48 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-"use strict";
+'use strict';
+
+const assert = require('assert');
+
+const WEBHOOK_TOPIC = 'topic';
 
 exports.methods = {
-    "__ca_init__" : function(cb) {
+    async __ca_init__() {
+        this.state.value = 0;
         this.$.log.debug("++++++++++++++++Calling init");
-        this.$.sharing.addWritableMap('forwarding', 'forwarding');
-        cb(null);
+        this.$.webhook.init(this, '__ca_admin_handler__');
+        if (!this.$.webhook.isAdmin()) {
+            const id = this.__ca_getName__() + '-' + WEBHOOK_TOPIC;
+            this.$.webhook.register(this, id, '__ca_handle_notification__');
+        }
+        return [];
     },
-    setBinding : function(key, value, cb) {
-        var $$ = this.$.sharing.$;
-        $$.forwarding.set(key, value);
-        cb(null);
 
+    async __ca_admin_handler__(topic, msg, from) {
+        assert(this.$.webhook.isAdmin());
+        this.$.log.debug(`handle admin ${topic} ${msg} ${from}`);
+        this.$.webhook.handleRegistration(this, msg, from);
+        return [];
     },
-    deleteBinding: function(key, cb) {
-        var $$ = this.$.sharing.$;
-        $$.forwarding.delete(key);
-        cb(null);
-    }
+
+    async __ca_handle_notification__(topic, msg, from) {
+        this.$.log.debug(`handle notif ${topic} ${msg} ${from}`);
+        const {value} = this.$.webhook.handleNotification(msg);
+        this.state.value = value;
+        return [];
+    },
+
+    async hello() {
+        return [];
+    },
+
+    async listWebhooks() {
+        return [null, this.$.webhook.list(this)];
+    },
+
+    async getValue() {
+        return [null, this.state.value];
+    },
 
 };

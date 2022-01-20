@@ -1,45 +1,34 @@
 {
     "name": "top",
     "env" : {
+        "appProtocol" : "http",
         "appPublisher" :"root",
-        "appLocalName" : "test",
-        "publicPath" : "process.env.PUBLIC_PATH||../../../../../test/public",
-        "appSuffix" : "vcap.me"
+        "appLocalName" : "webhook",
+        "appSuffix" : "vcap.me:3000"
     },
     "components": [
+        {
+            "name": "log",
+            "env" : {
+                  "logLevel" : "DEBUG"
+
+            }
+
+        },
         {
             "name": "security",
             "module": null
         },
         {
-            "name": "sharing"
+            "name": "pubsub"
         },
         {
             "module": "../../index.js#plug",
-            "name": "forward",
-            "description": "HTTP proxy plugin\n Properties: ",
+            "name": "webhook",
+            "description": "Webhook plugin\n Properties: ",
              "env": {
-                         "adminCA": "process.env.ADMIN_CA||admin",
-                         "forwardingTable": "process.env.FORWARDING_TABLE||forwarding"
-                    }
-        },
-        {
-           "name": "pipeline",
-           "components" : [
-               {
-                   "name" :"static2"
-               },
-               {
-                   "name": "forward",
-                   "module": "../../index.js#pipe",
-                   "description": "Forward HTTP requests.",
-                    "env" : {
-                        "webSocketPipe": false,
-                        "httpPipe" : true,
-                        "path": "/"
-                    }
-                }
-            ]
+                 "webhookMap": "process.env.WEBHOOK_MAP||root-admin-webhook"
+             }
         }
     ]
 }

@@ -71,7 +71,7 @@ module.exports = {
     },
 
     async forward(test) {
-        test.expect(4);
+        test.expect(5);
         var s1;
         const from1 = FROM_1;
         const from2 = FROM_2;
@@ -107,7 +107,7 @@ module.exports = {
             await new Promise((resolve, reject) => {
                 s1.onopen = async function() {
                     try {
-                        const res = await s1.register().getPromise();
+                        const res = await s1.hello().getPromise();
                         resolve(res);
                     } catch (err) {
                         test.ok(false, 'Got exception ' + err);
@@ -135,6 +135,13 @@ module.exports = {
             test.ok(res !== 30);
 
             await setTimeoutPromise(100);
+
+            res = await s1.listWebhooks().getPromise();
+
+            console.log(res);
+
+            test.ok(res[TOPIC].active);
+
 
             await new Promise((resolve, reject) => {
                 s1.onclose = function(err) {
