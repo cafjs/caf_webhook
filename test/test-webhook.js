@@ -78,7 +78,7 @@ module.exports = {
 
         try {
             // Set up admin
-            s1 = new cli.Session('ws://root-webhook.vcap.me:3000',
+            s1 = new cli.Session('ws://root-webhook.localtest.me:3000',
                                  from1, {from : from1});
             await new Promise((resolve, reject) => {
                 s1.onopen = async function() {
@@ -102,7 +102,7 @@ module.exports = {
             await setTimeoutPromise(100);
 
             // Init foo
-            s1 = new cli.Session('ws://root-webhook.vcap.me:3000',
+            s1 = new cli.Session('ws://root-webhook.localtest.me:3000',
                                  from2, {from : from2});
             await new Promise((resolve, reject) => {
                 s1.onopen = async function() {

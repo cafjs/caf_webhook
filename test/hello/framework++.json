@@ -4,7 +4,7 @@
         "appProtocol" : "http",
         "appPublisher" :"root",
         "appLocalName" : "webhook",
-        "appSuffix" : "vcap.me:3000"
+        "appSuffix" : "localtest.me:3000"
     },
     "components": [
         {
